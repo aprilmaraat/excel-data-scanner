@@ -4,6 +4,10 @@ using System.Data.OleDb;
 using OfficeOpenXml;
 using System;
 using System.IO;
+using QueryGenerator;
+using System.Reflection;
+using Newtonsoft;
+using Newtonsoft.Json;
 
 string filePath = @"C:\Users\amaraat\Desktop\71028.xlsx";
 string textFile = @"C:\Users\amaraat\Desktop\test.txt";
@@ -26,22 +30,55 @@ using (var package = new ExcelPackage(new FileInfo(filePath)))
     // Open the file for writing
     using (StreamWriter writer = new StreamWriter(textFile))
     {
-        // col = 2;
-        // Write some lines of text
+        var requirementData = new RequirementData();
+        //var columnList = new List<string>();
+        var columnIndexList = new List<ColumnIndex>();
+        var index = 0;
         for (int col = 2; col <= colCount; col++)
         {
-            for (int row = 4; row <= rowCount; row++)
+            var cellValue = worksheet.Cells[5, col].Value.ToString().Replace(" ", "_").Replace("-", " ").Replace("1st", "First");
+            //columnList.Add(cellValue);
+            columnIndexList.Add(new ColumnIndex 
+            {
+                Index = index,
+                Name = cellValue,
+                ColumnNumber = col
+            });
+            index++;
+        }
+
+        //columnIndexList.ForEach(cell => 
+        //{
+        //    writer.WriteLine(JsonConvert.SerializeObject(cell));
+        //});
+
+        // Write some lines of text
+        for (int row = 5; row <= rowCount; row++)
+        {
+            var text = $"new ActionRequirementMapping(new Guid(\"{Guid.NewGuid()}\")";
+            for (int col = 2; col <= colCount; col++)
             {
                 // Get cell value
                 var cellValue = worksheet.Cells[row, col].Value;
-                writer.WriteLine(Guid.NewGuid());
-                writer.WriteLine(cellValue);
+                if (row == 5)
+                {
+                    //Type t = Type.GetType("RequirementData");
+                    PropertyInfo property = typeof(RequirementData).GetProperty(cellValue.ToString());
+                    //writer.WriteLine(cellValue);
+                    if (property != null) 
+                    {
+                        //object value = new object();
+                        //var myValue = property.GetValue(new object(), null);
+                        //writer.WriteLine($"{0} => {1}", property, myValue);
+                    }
+                }
+
+                //if ()
+                //text += $", /*Action {cellValue}*/";
+                //writer.WriteLine(cellValue);
             }
             break;
         };
     }
-    
-}
 
-Console.WriteLine("Press any key to exit.");
-Console.ReadKey();
+}
