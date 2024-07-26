@@ -9,7 +9,7 @@ namespace QueryGenerator
 {
     public class RequirementData
     {
-        public static string Class_List => "lass List";
+        public static string Class_List => "Class List";
         public static string to_publication_date => "To Publication Date";
         public static string due_rule => "Due Rule";
         public static string due_rule_2 => "Due Rule 2";

@@ -8,16 +8,11 @@ using QueryGenerator;
 using System.Reflection;
 using Newtonsoft;
 using Newtonsoft.Json;
+using System.Xml.Linq;
 
 string filePath = @"C:\Users\amaraat\Desktop\71028.xlsx";
-string textFile = @"C:\Users\amaraat\Desktop\test.txt";
-
-// Check if file exists
-if (!File.Exists(filePath))
-{
-    Console.WriteLine("Excel file not found.");
-    return;
-}
+string textFile = @"C:\Users\amaraat\Desktop\output.txt";
+string columListFile = @"C:\Users\amaraat\Desktop\column_list.txt";
 
 // Read and process Excel file
 using (var package = new ExcelPackage(new FileInfo(filePath)))
@@ -27,9 +22,10 @@ using (var package = new ExcelPackage(new FileInfo(filePath)))
     int rowCount = worksheet.Dimension.Rows;
     int colCount = worksheet.Dimension.Columns;
 
-    // Open the file for writing
+        // Open the file for writing
     using (StreamWriter writer = new StreamWriter(textFile))
     {
+        
         var requirementData = new RequirementData();
         //var columnList = new List<string>();
         var columnIndexList = new List<ColumnIndex>();
@@ -38,7 +34,7 @@ using (var package = new ExcelPackage(new FileInfo(filePath)))
         {
             var cellValue = worksheet.Cells[5, col].Value.ToString().Replace(" ", "_").Replace("-", " ").Replace("1st", "First");
             //columnList.Add(cellValue);
-            columnIndexList.Add(new ColumnIndex 
+            columnIndexList.Add(new ColumnIndex
             {
                 Index = index,
                 Name = cellValue,
@@ -47,38 +43,86 @@ using (var package = new ExcelPackage(new FileInfo(filePath)))
             index++;
         }
 
-        //columnIndexList.ForEach(cell => 
+        //using (StreamWriter columnWriter = new StreamWriter(columListFile))
         //{
-        //    writer.WriteLine(JsonConvert.SerializeObject(cell));
-        //});
+        //    columnIndexList.ForEach(cell =>
+        //    {
+        //        columnWriter.WriteLine(JsonConvert.SerializeObject(cell));
+        //    });
+        //}
+
+        // new ActionRequirementMapping(new Guid("819301b3-e851-483c-a264-f85536824046"),
+        // actions.SingleOrDefault(x => x.JurisdictionId == jurisdictions.SingleOrDefault(j => j.Code == )),
+        // requirementList.SingleOrDefault(x => x.Id == new Guid(series)).Id, DateTime.MinValue, null),
+
+        var nameString = new List<string>();
+        nameString.Add("Readiness_to_License");
+        nameString.Add("small_entity");
+        nameString.Add("micro_entity");
+        nameString.Add("indiv_owner");
+        nameString.Add("Multiple_Design");
+        nameString.Add("series");
+        nameString.Add("privilege");
+        nameString.Add("base_uk");
+        nameString.Add("base_wo");
+        nameString.Add("inventor");
+        nameString.Add("non_profit");
+        nameString.Add("new_law");
+        nameString.Add("priority_date_requested");
 
         // Write some lines of text
-        for (int row = 5; row <= rowCount; row++)
+        for (int row = 6; row <= rowCount; row++)
         {
-            var text = $"new ActionRequirementMapping(new Guid(\"{Guid.NewGuid()}\")";
+            //var text = "";
+            //var text2 = "";
+            var countryText = "";
             for (int col = 2; col <= colCount; col++)
             {
-                // Get cell value
-                var cellValue = worksheet.Cells[row, col].Value;
-                if (row == 5)
+                try
                 {
-                    //Type t = Type.GetType("RequirementData");
-                    PropertyInfo property = typeof(RequirementData).GetProperty(cellValue.ToString());
-                    //writer.WriteLine(cellValue);
-                    if (property != null) 
+                    var text = $"new ActionRequirementMapping(new Guid(\"{Guid.NewGuid()}\"), ";
+                    var text2 = "";
+                    // Get cell value
+                    var cellValue = worksheet.Cells[row, col].Value?.ToString()?
+                        .Replace("-", "_")
+                        .Replace(" ", "_")
+                        .Replace("1st", "First")
+                        .Replace("_(y/n)", "")
+                        .Replace("_y/n)", "");
+
+                    var name = columnIndexList.SingleOrDefault(x => x.ColumnNumber == col)?.Name;
+                    
+                    if (name == "country_code" || col == 2)
                     {
-                        //object value = new object();
-                        //var myValue = property.GetValue(new object(), null);
-                        //writer.WriteLine($"{0} => {1}", property, myValue);
+                        countryText += $"actions.SingleOrDefault(x => x.JurisdictionId == jurisdictions.SingleOrDefault(j => j.Code == \"{cellValue}\")),";
+                    }
+
+                    PropertyInfo property = typeof(RequirementData).GetProperty(name);
+                    var propertyValue = property.GetValue(null);
+
+                    if (nameString.Contains(name))
+                    {
+                        if (cellValue == "true")
+                        {
+                            text2 += $"requirementList.SingleOrDefault(x => x.Name == \"{propertyValue}\").Id, DateTime.MinValue, null),";
+                            writer.WriteLine(text + countryText + text2);
+                        }
+                    }
+                    else if (columnIndexList.Any(x => x.Name.Contains(name)))
+                    {
+                        //writer.WriteLine($"Cell Value {!string.IsNullOrEmpty(cellValue)} {cellValue}");
+                        if (!string.IsNullOrEmpty(cellValue) && cellValue != "n/a")
+                        {
+                            text2 += $"requirementList.SingleOrDefault(x => x.Name == \"{propertyValue}\").Id, DateTime.MinValue, null),";
+                            writer.WriteLine(text + countryText + text2);
+                        }
                     }
                 }
-
-                //if ()
-                //text += $", /*Action {cellValue}*/";
-                //writer.WriteLine(cellValue);
+                catch (Exception ex)
+                {
+                    continue;
+                }
             }
-            break;
-        };
+        }
     }
-
 }
