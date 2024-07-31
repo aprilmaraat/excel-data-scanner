@@ -130,7 +130,7 @@ namespace QueryGenerator
                                     var value = "";
                                     switch (cellValue) 
                                     {
-                                        case "Utility model":
+                                        case "Utility_model":
                                             value = "utility";
                                             break;
                                         case "Trademark":
@@ -156,7 +156,7 @@ namespace QueryGenerator
                                 {
                                     if (cellValue == "true")
                                     {
-                                        text2 += $"requirementList.SingleOrDefault(x => x.Name == \"{propertyValue}\").Id, DateTime.MinValue, null),";
+                                        text2 += $"requirementList.SingleOrDefault(x => x.Name == \"{propertyValue}\").Id, DateTime.MinValue, null, generalOriginId),";
                                         writer.WriteLine(text + countryText + "), " + text2);
                                     }
                                 }
@@ -165,7 +165,7 @@ namespace QueryGenerator
                                     //writer.WriteLine($"Cell Value {!string.IsNullOrEmpty(cellValue)} {cellValue}");
                                     if (!string.IsNullOrEmpty(cellValue) && cellValue != "n/a")
                                     {
-                                        text2 += $"requirementList.SingleOrDefault(x => x.Name == \"{propertyValue}\").Id, DateTime.MinValue, null),";
+                                        text2 += $"requirementList.SingleOrDefault(x => x.Name == \"{propertyValue}\").Id, DateTime.MinValue, null, generalOriginId),";
                                         writer.WriteLine(text + countryText + "), " + text2);
                                     }
                                 }
