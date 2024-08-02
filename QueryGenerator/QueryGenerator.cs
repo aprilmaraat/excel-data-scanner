@@ -140,13 +140,15 @@ namespace QueryGenerator
                                             value = "patent";
                                             break;
                                         case "Design":
-                                            value = "registered design";
+                                            //value = "registered design";
+                                            value = "design";
                                             break;
                                         default:
                                             value = cellValue;
                                             break;
                                     }
-                                    countryText += $" && x.IpTypeId == ipTypes.SingleOrDefault(ip => ip.IpTypeName == \"{value}\").Id";
+                                    //countryText += $" && x.IprTypeId == ipTypes.SingleOrDefault(ip => ip.IpTypeName == \"{value}\").Id";
+                                    countryText += $" && x.IprTypeId == {value}.Id";
                                 }
 
                                 PropertyInfo property = typeof(RequirementData).GetProperty(name);
@@ -156,8 +158,8 @@ namespace QueryGenerator
                                 {
                                     if (cellValue == "true")
                                     {
-                                        text2 += $"requirementList.SingleOrDefault(x => x.Name == \"{propertyValue}\").Id, DateTime.MinValue, null, generalOriginId),";
-                                        writer.WriteLine(text + countryText + "), " + text2);
+                                        text2 += $"requirementList.SingleOrDefault(x => x.Name == \"{propertyValue}\").Id, DateTime.MinValue, null, generalOrigin.Id),";
+                                        writer.WriteLine(text + countryText + ").Id, " + text2);
                                     }
                                 }
                                 else if (columnIndexList.Any(x => x.Name.Contains(name)))
@@ -165,8 +167,8 @@ namespace QueryGenerator
                                     //writer.WriteLine($"Cell Value {!string.IsNullOrEmpty(cellValue)} {cellValue}");
                                     if (!string.IsNullOrEmpty(cellValue) && cellValue != "n/a")
                                     {
-                                        text2 += $"requirementList.SingleOrDefault(x => x.Name == \"{propertyValue}\").Id, DateTime.MinValue, null, generalOriginId),";
-                                        writer.WriteLine(text + countryText + "), " + text2);
+                                        text2 += $"requirementList.SingleOrDefault(x => x.Name == \"{propertyValue}\").Id, DateTime.MinValue, null, generalOrigin.Id),";
+                                        writer.WriteLine(text + countryText + ").Id, " + text2);
                                     }
                                 }
                             }
